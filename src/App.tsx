@@ -1,14 +1,13 @@
 import "preact/debug";
 import { useCallback, useEffect, useMemo } from "preact/hooks";
-
-import { Titlebar } from "./app/Titlebar";
-import { ImageView } from "./app/ImageView";
-import { EmptyView } from "./app/EmptyView";
-import { useFilePicker } from "./app/hooks/useFilePicker";
-import { useCurrentWindow } from "./app/hooks/useCurrentWindow";
-import { useListFilesInSameDirectory } from "./app/hooks/useListFilesInSameDirectory";
-import { useKeydown } from "./app/hooks/useKeydown";
 import { getCliArgumentFilepath } from "./api";
+import { EmptyView } from "./app/EmptyView";
+import { useCurrentWindow } from "./app/hooks/useCurrentWindow";
+import { useFilePicker } from "./app/hooks/useFilePicker";
+import { useKeydown } from "./app/hooks/useKeydown";
+import { useListFilesInSameDirectory } from "./app/hooks/useListFilesInSameDirectory";
+import { ImageView } from "./app/ImageView";
+import { Titlebar } from "./app/Titlebar";
 
 export function App() {
   const appWindow = useCurrentWindow();

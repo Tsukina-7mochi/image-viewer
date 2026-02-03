@@ -15,7 +15,7 @@ export function useFilePicker(): [
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [isPickerOpening, setPickerOpening] = useState(false);
 
-  const setFilepath = function (filepath: string | null) {
+  const setFilepath = (filepath: string | null) => {
     setFilepathRaw(filepath);
     setFileUrl(filepath ? `${convertFileSrc(filepath)}?${Date.now()}` : null);
   };
