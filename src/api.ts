@@ -7,3 +7,7 @@ export async function listFilesInSameDirectory(
     filepath,
   });
 }
+
+export async function getCliArgumentFilepath(): Promise<string | undefined> {
+  return await invoke<string | undefined>("get_cli_argument_filename");
+}

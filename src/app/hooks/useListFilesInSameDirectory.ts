@@ -2,10 +2,15 @@ import { useEffect, useState } from "preact/hooks";
 
 import * as api from "../../api";
 
-export function useListFilesInSameDirectory(filepath: string): string[] {
+export function useListFilesInSameDirectory(filepath: string | null): string[] {
   const [list, setList] = useState<string[]>([]);
 
   useEffect(() => {
+    if (filepath === null) {
+      setList([]);
+      return;
+    }
+
     (async () => {
       try {
         const result = await api.listFilesInSameDirectory(filepath);

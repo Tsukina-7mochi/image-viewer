@@ -10,49 +10,36 @@ export function useFilePicker(): [
     renewFileUrl: () => void;
   },
 ] {
-  const [filepath, setFilepath] = useState<string | null>(null);
+  const [filepath, setFilepathRaw] = useState<string | null>(null);
   // create a state instead of calculating from filepath to generate a new url
   // with only new search parameter to reload image
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [isPickerOpening, setPickerOpening] = useState(false);
 
-  const openFilePicker = function () {
+  const setFilepath = function (filepath: string | null) {
+    setFilepathRaw(filepath);
+    setFileUrl(filepath ? convertFileSrc(filepath) : null);
+  };
+
+  const openFilePicker = useCallback(() => {
+    if (isPickerOpening) return;
+    setPickerOpening(true);
+
     (async () => {
       try {
         const result = await dialog.open({
           multiple: false,
           directory: false,
           fileAccessMode: "scoped",
-          filters: [
-            {
-              // list from https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types
-              name: "Image",
-              extensions: [
-                "apng",
-                "png",
-                "avif",
-                "jpg",
-                "jpeg",
-                "jfif",
-                "pjpeg",
-                "pjp",
-                "svg",
-                "webp",
-                "bmp",
-                "ico",
-                "cur",
-                "tif",
-                "tiff",
-              ],
-            },
-          ],
+          pickerMode: "image",
         });
+        setPickerOpening(false);
         setFilepath(result);
-        setFileUrl(result ? convertFileSrc(result) : null);
       } catch (e) {
         console.error(e);
       }
     })();
-  };
+  }, [isPickerOpening, setFilepath]);
 
   const renewFileUrl = useCallback(() => {
     const url = URL.parse(fileUrl as any);

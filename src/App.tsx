@@ -8,6 +8,7 @@ import { useFilePicker } from "./app/hooks/useFilePicker";
 import { useCurrentWindow } from "./app/hooks/useCurrentWindow";
 import { useListFilesInSameDirectory } from "./app/hooks/useListFilesInSameDirectory";
 import { useKeydown } from "./app/hooks/useKeydown";
+import { getCliArgumentFilepath } from "./api";
 
 export function App() {
   const appWindow = useCurrentWindow();
@@ -40,7 +41,7 @@ export function App() {
     setFilepath(filesInSameDirectory[newIndex]);
   }, [filepath, filesInSameDirectory]);
 
-  const closeWindow = useCallback(() => appWindow.close());
+  const closeWindow = useCallback(() => appWindow.close(), [appWindow]);
 
   useEffect(() => {
     appWindow.setTitle(windowTitle);
@@ -50,6 +51,15 @@ export function App() {
   useKeydown({ key: "r", ctrlKey: true }, renewFileUrl);
   useKeydown({ key: "o", ctrlKey: true }, openFilePicker);
   useKeydown({ key: "w", ctrlKey: true }, closeWindow);
+
+  useEffect(() => {
+    (async () => {
+      const filepath = await getCliArgumentFilepath();
+      if (!filepath) return;
+      console.log(filepath);
+      setFilepath(filepath);
+    })();
+  }, []);
 
   return (
     <>
