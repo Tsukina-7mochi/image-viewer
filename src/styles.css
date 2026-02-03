@@ -3,9 +3,6 @@
 
 @theme {
   --color-background: #202020;
-  --color-background-secondary: #272727;
-  --color-background-hover: rgba(255, 255, 255, 0.05);
-  --color-background-active: rgba(255, 255, 255, 0.1);
   --color-foreground: #ffffff;
 }
 
@@ -14,20 +11,17 @@
   font-family:
     -apple-system,
     BlinkMacSystemFont,
-    "SF Pro Text",
-    "SF Pro Display",
+    "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans",
     /* Windows */
-    "Segoe UI",
     "Yu Gothic UI",
-    "Meiryo UI",
+    "Yu Gothic",
+    "Meiryo",
     /* Linux (GNOME/KDE) */
-    "Ubuntu",
-    "Cantarell",
-    "Noto Sans",
     "Noto Sans CJK JP",
+    "Noto Sans JP",
     /* Fallback */
     system-ui,
-    -apple-system-body,
     sans-serif;
 
   font-size: 14px;
