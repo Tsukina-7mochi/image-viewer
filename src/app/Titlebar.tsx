@@ -3,13 +3,13 @@ import maximizeIcon from "../assets/icons/window-maximize.svg";
 import minimizeIcon from "../assets/icons/window-minimize.svg";
 import { useCurrentWindow } from "./hooks/useCurrentWindow";
 
-function Title() {
+function Title(props: { text: string }) {
   return (
     <div
       data-tauri-drag-region
       class="grow px-4 truncate opacity-0 group-hover:opacity-100"
     >
-      Image Viewer
+      {props.text}
     </div>
   );
 }
@@ -41,7 +41,7 @@ function IconButton(props: {
   );
 }
 
-export function Titlebar() {
+export function Titlebar(props: { title: string }) {
   const appWindow = useCurrentWindow();
 
   return (
@@ -49,7 +49,7 @@ export function Titlebar() {
       data-tauri-drag-region
       class="group flex fixed left-0 right-0 top-0 h-10 items-center bg-none text-foreground hover:bg-background-secondary"
     >
-      <Title />
+      <Title text={props.title} />
       <IconButton
         icon={minimizeIcon}
         title="Minimize"
