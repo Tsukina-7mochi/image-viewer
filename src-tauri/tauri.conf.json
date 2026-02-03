@@ -13,13 +13,18 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "image-viewer",
+        "title": "Image Viewer",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "decorations": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {
@@ -32,5 +37,18 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "cli": {
+      "description": "An image viewer",
+      "args": [
+        {
+          "name": "file",
+          "index": 1,
+          "takesValue": true,
+          "required": false
+        }
+      ]
+    }
   }
 }

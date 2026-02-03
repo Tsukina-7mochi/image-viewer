@@ -1,22 +1,9 @@
-import { invoke } from "@tauri-apps/api/core";
-
-let greetInputEl: HTMLInputElement | null;
-let greetMsgEl: HTMLElement | null;
-
-async function greet() {
-  if (greetMsgEl && greetInputEl) {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsgEl.textContent = await invoke("greet", {
-      name: greetInputEl.value,
-    });
-  }
-}
+import { getMatches } from "@tauri-apps/plugin-cli";
+import { h, render } from "preact";
+import { App } from "./App";
 
 window.addEventListener("DOMContentLoaded", () => {
-  greetInputEl = document.querySelector("#greet-input");
-  greetMsgEl = document.querySelector("#greet-msg");
-  document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    greet();
-  });
+  render(h(App, null, null), document.body);
+
+  getMatches().then((matches) => console.log(matches));
 });
