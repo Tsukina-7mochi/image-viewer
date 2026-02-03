@@ -1,13 +1,12 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import * as dialog from "@tauri-apps/plugin-dialog";
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { useCallback, useState } from "preact/hooks";
 
 export function useFilePicker(): [
   { path: string; url: string } | null,
   {
     openFilePicker: () => void;
     setFilepath: (filepath: string | null) => void;
-    renewFileUrl: () => void;
   },
 ] {
   const [filepath, setFilepathRaw] = useState<string | null>(null);
@@ -18,7 +17,7 @@ export function useFilePicker(): [
 
   const setFilepath = function (filepath: string | null) {
     setFilepathRaw(filepath);
-    setFileUrl(filepath ? convertFileSrc(filepath) : null);
+    setFileUrl(filepath ? `${convertFileSrc(filepath)}?${Date.now()}` : null);
   };
 
   const openFilePicker = useCallback(() => {
@@ -41,13 +40,6 @@ export function useFilePicker(): [
     })();
   }, [isPickerOpening, setFilepath]);
 
-  const renewFileUrl = useCallback(() => {
-    const url = URL.parse(fileUrl as any);
-    if (!url) return;
-    url.search = `?{Date.now()}`;
-    setFileUrl(url.toString());
-  }, [fileUrl]);
-
   return [
     filepath && fileUrl
       ? {
@@ -55,6 +47,6 @@ export function useFilePicker(): [
           url: fileUrl,
         }
       : null,
-    { openFilePicker, setFilepath, renewFileUrl },
+    { openFilePicker, setFilepath },
   ];
 }

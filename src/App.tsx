@@ -12,13 +12,11 @@ import { getCliArgumentFilepath } from "./api";
 
 export function App() {
   const appWindow = useCurrentWindow();
-  const [file, { openFilePicker, setFilepath, renewFileUrl }] = useFilePicker();
+  const [file, { openFilePicker, setFilepath }] = useFilePicker();
   const filepath = useMemo(() => file?.path ?? null, [file]);
   const fileUrl = useMemo(() => file?.url ?? null, [file]);
   const windowTitle = useMemo(() => filepath ?? "Image Viewer", [filepath]);
-  const filesInSameDirectory = filepath
-    ? useListFilesInSameDirectory(filepath)
-    : [];
+  const filesInSameDirectory = useListFilesInSameDirectory(filepath);
 
   const openNextImage = useCallback(() => {
     console.log(filepath, filesInSameDirectory);
@@ -43,12 +41,16 @@ export function App() {
 
   const closeWindow = useCallback(() => appWindow.close(), [appWindow]);
 
+  const reloadImage = useCallback(() => {
+    setFilepath(filepath);
+  }, [filepath]);
+
   useEffect(() => {
     appWindow.setTitle(windowTitle);
   }, [windowTitle]);
   useKeydown({ key: "ArrowRight" }, openNextImage);
   useKeydown({ key: "ArrowLeft" }, openPreviousImage);
-  useKeydown({ key: "r", ctrlKey: true }, renewFileUrl);
+  useKeydown({ key: "r", ctrlKey: true }, reloadImage);
   useKeydown({ key: "o", ctrlKey: true }, openFilePicker);
   useKeydown({ key: "w", ctrlKey: true }, closeWindow);
 

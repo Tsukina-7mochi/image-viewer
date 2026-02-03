@@ -14,7 +14,7 @@ export function useListFilesInSameDirectory(filepath: string | null): string[] {
     (async () => {
       try {
         const result = await api.listFilesInSameDirectory(filepath);
-        console.log(filepath, result);
+        console.log("update list", filepath, result);
         setList(result);
       } catch (e) {
         console.error(e);
