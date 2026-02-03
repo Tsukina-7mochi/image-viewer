@@ -1,5 +1,5 @@
 import "preact/debug";
-import { useCallback, useEffect, useMemo } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { getCliArgumentFilepath } from "./api";
 import { EmptyView } from "./app/EmptyView";
 import { useCurrentWindow } from "./app/hooks/useCurrentWindow";
@@ -16,6 +16,7 @@ export function App() {
   const fileUrl = useMemo(() => file?.url ?? null, [file]);
   const windowTitle = useMemo(() => filepath ?? "Image Viewer", [filepath]);
   const filesInSameDirectory = useListFilesInSameDirectory(filepath);
+  const [immersiveMode, setImmersiveMode] = useState(false);
 
   const openNextImage = useCallback(() => {
     console.log(filepath, filesInSameDirectory);
@@ -44,6 +45,10 @@ export function App() {
     setFilepath(filepath);
   }, [filepath]);
 
+  const toggleImmersiveMode = useCallback(() => {
+    setImmersiveMode((prev) => !prev);
+  }, [immersiveMode]);
+
   useEffect(() => {
     appWindow.setTitle(windowTitle);
   }, [windowTitle]);
@@ -52,6 +57,7 @@ export function App() {
   useKeydown({ key: "r", ctrlKey: true }, reloadImage);
   useKeydown({ key: "o", ctrlKey: true }, openFilePicker);
   useKeydown({ key: "w", ctrlKey: true }, closeWindow);
+  useKeydown({ key: "F11" }, toggleImmersiveMode);
 
   useEffect(() => {
     (async () => {
@@ -64,7 +70,7 @@ export function App() {
 
   return (
     <>
-      <Titlebar title={windowTitle} />
+      <Titlebar title={windowTitle} autoHide={immersiveMode} />
       <main class="size-full bg-background text-foreground">
         {fileUrl ? (
           <ImageView url={fileUrl} />

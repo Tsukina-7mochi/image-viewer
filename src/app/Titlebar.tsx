@@ -5,10 +5,7 @@ import { useCurrentWindow } from "./hooks/useCurrentWindow";
 
 function Title(props: { text: string }) {
   return (
-    <div
-      data-tauri-drag-region
-      class="grow px-4 truncate opacity-0 group-hover:opacity-100"
-    >
+    <div data-tauri-drag-region class="grow px-4 truncate">
       {props.text}
     </div>
   );
@@ -21,51 +18,54 @@ function IconButton(props: {
   interactionStyles?: string;
 }) {
   const interactionStyles =
-    props.interactionStyles ??
-    "hover:bg-background-hover active:bg-background-active";
+    props.interactionStyles ?? "hover:bg-white/5 active:bg-white/10";
 
   return (
     <button
       type="button"
       title={props.title}
       onClick={props.onClick}
-      class={`w-15 h-full text-center hover:bg-background-hover ${interactionStyles}`}
+      class={`w-12 h-full text-center ${interactionStyles}`}
     >
       <img
         src={props.icon}
         alt=""
-        class="inline-block h-6 text-foreground"
+        class="inline-block h-4 text-foreground"
         draggable={false}
       />
     </button>
   );
 }
 
-export function Titlebar(props: { title: string }) {
+export function Titlebar(props: { title: string; autoHide?: boolean }) {
   const appWindow = useCurrentWindow();
 
+  const colorStyles = "bg-none text-foreground hover:bg-background/40";
+  const autoHideStyles = props.autoHide ? "invisible hover:visible" : "";
+
   return (
-    <div
-      data-tauri-drag-region
-      class="group flex fixed left-0 right-0 top-0 h-10 items-center bg-none text-foreground hover:bg-background-secondary"
-    >
-      <Title text={props.title} />
-      <IconButton
-        icon={minimizeIcon}
-        title="Minimize"
-        onClick={() => appWindow.minimize()}
-      />
-      <IconButton
-        icon={maximizeIcon}
-        title="Maximize"
-        onClick={() => appWindow.toggleMaximize()}
-      />
-      <IconButton
-        icon={closeIcon}
-        title="Close"
-        onClick={() => appWindow.close()}
-        interactionStyles="hover:bg-red-600 active:bg-red-700"
-      />
+    <div data-tauri-drag-region class="fixed left-0 right-0 top-0 h-8">
+      <div
+        class={`size-full flex items-center text-xs ${colorStyles} ${autoHideStyles}`}
+      >
+        <Title text={props.title} />
+        <IconButton
+          icon={minimizeIcon}
+          title="Minimize"
+          onClick={() => appWindow.minimize()}
+        />
+        <IconButton
+          icon={maximizeIcon}
+          title="Maximize"
+          onClick={() => appWindow.toggleMaximize()}
+        />
+        <IconButton
+          icon={closeIcon}
+          title="Close"
+          onClick={() => appWindow.close()}
+          interactionStyles="hover:bg-red-600 active:bg-red-700"
+        />
+      </div>
     </div>
   );
 }
