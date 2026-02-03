@@ -22,6 +22,8 @@ export function useKeydown(
         return;
 
       callback(e);
+
+      e.preventDefault();
     };
     document.addEventListener("keydown", handler);
     return () => {
