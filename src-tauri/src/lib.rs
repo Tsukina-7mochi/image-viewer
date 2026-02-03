@@ -79,8 +79,10 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![list_files_in_same_directory])
-        .invoke_handler(tauri::generate_handler![get_cli_argument_filename])
+        .invoke_handler(tauri::generate_handler![
+            list_files_in_same_directory,
+            get_cli_argument_filename,
+        ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_cli::init())
         .plugin(tauri_plugin_opener::init())
