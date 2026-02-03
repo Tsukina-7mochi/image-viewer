@@ -1,7 +1,7 @@
 export function ImageView(props: { url: string }) {
   return (
     <div class="size-full">
-      <img src={props.url} />
+      <img src={props.url} alt="" />
     </div>
   );
 }
