@@ -70,7 +70,7 @@ export function App() {
 
   return (
     <>
-      <Titlebar title={windowTitle} autoHide={immersiveMode} />
+      <Titlebar title={windowTitle} hidden={immersiveMode} />
       <main class="size-full bg-background text-foreground">
         {fileUrl ? (
           <ImageView url={fileUrl} />

@@ -37,16 +37,17 @@ function IconButton(props: {
   );
 }
 
-export function Titlebar(props: { title: string; autoHide?: boolean }) {
+export function Titlebar(props: { title: string; hidden?: boolean }) {
   const appWindow = useCurrentWindow();
 
-  const colorStyles = "bg-none text-foreground hover:bg-background/40";
-  const autoHideStyles = props.autoHide ? "invisible hover:visible" : "";
+  const colorStyles =
+    "trainsition duration-150 ease-in-out bg-none text-foreground hover:bg-background/40";
+  const visibilityStyles = props.hidden ? "hidden" : "";
 
   return (
     <div data-tauri-drag-region class="fixed left-0 right-0 top-0 h-8">
       <div
-        class={`size-full flex items-center text-xs ${colorStyles} ${autoHideStyles}`}
+        class={`size-full flex items-center text-xs ${colorStyles} ${visibilityStyles}`}
       >
         <Title text={props.title} />
         <IconButton
