@@ -83,6 +83,7 @@ export function ImageView(props: { url: string }) {
       return;
     }
 
+    console.log(imageSize);
     const width = imageSize.width * scale.current;
     const height = imageSize.height * scale.current;
     const left = position.current.x;

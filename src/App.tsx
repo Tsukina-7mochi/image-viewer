@@ -48,7 +48,6 @@ export function App() {
 
   return (
     <>
-      <Titlebar title={windowTitle} hidden={immersiveMode} />
       <main class="size-full bg-background text-foreground">
         {viewer.image ? (
           <ImageView url={viewer.image.url} />
@@ -59,6 +58,7 @@ export function App() {
           />
         )}
       </main>
+      <Titlebar title={windowTitle} hidden={immersiveMode} />
     </>
   );
 }
