@@ -58,16 +58,29 @@ export function ImageView(props: { url: string }) {
     [wrapperRect, imageSize],
   );
 
-  const setScale = useCallback((newScale_: number) => {
-    let minScale = 0;
-    if (imageSize !== null) {
-      minScale = MIN_SIZE_PX / Math.min(imageSize.width, imageSize.height);
-    }
-    const newScale = Math.max(minScale, newScale_);
-    scale.current = newScale;
+  const setScale = useCallback(
+    (newScale_: number) => {
+      let minScale = 0;
+      if (imageSize !== null) {
+        minScale = MIN_SIZE_PX / Math.min(imageSize.width, imageSize.height);
+      }
+      const newScale = Math.max(minScale, newScale_);
 
-    updatePlacementStyles();
-  }, []);
+      if (imageSize) {
+        const pos = position.current;
+        const centerX = pos.x + (imageSize.width * scale.current) / 2;
+        const centerY = pos.y + (imageSize.height * scale.current) / 2;
+        position.current = {
+          x: centerX - (imageSize.width * newScale) / 2,
+          y: centerY - (imageSize.height * newScale) / 2,
+        };
+      }
+
+      scale.current = newScale;
+      updatePlacementStyles();
+    },
+    [imageSize],
+  );
 
   const updatePlacementStyles = useCallback(() => {
     if (wrapperRect === null || imageSize === null) {
