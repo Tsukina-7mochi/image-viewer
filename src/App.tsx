@@ -4,67 +4,45 @@ import { getCliArgumentFilepath } from "./api";
 import { EmptyView } from "./app/EmptyView";
 import { useCurrentWindow } from "./app/hooks/useCurrentWindow";
 import { useFilePicker } from "./app/hooks/useFilePicker";
+import { useImageViewer } from "./app/hooks/useImageViewer";
 import { useKeydown } from "./app/hooks/useKeydown";
-import { useListFilesInSameDirectory } from "./app/hooks/useListFilesInSameDirectory";
 import { ImageView } from "./app/ImageView";
 import { Titlebar } from "./app/Titlebar";
 
 export function App() {
-  const appWindow = useCurrentWindow();
-  const [file, { openFilePicker, setFilepath }] = useFilePicker();
-  const filepath = useMemo(() => file?.path ?? null, [file]);
-  const fileUrl = useMemo(() => file?.url ?? null, [file]);
-  const windowTitle = useMemo(() => filepath ?? "Image Viewer", [filepath]);
-  const filesInSameDirectory = useListFilesInSameDirectory(filepath);
   const [immersiveMode, setImmersiveMode] = useState(false);
+  const appWindow = useCurrentWindow();
+  const viewer = useImageViewer();
+  const filePicker = useFilePicker(viewer.setPath);
 
-  const openNextImage = useCallback(() => {
-    console.log(filepath, filesInSameDirectory);
-    if (!filepath) return;
-
-    const index = filesInSameDirectory.indexOf(filepath);
-    const newIndex = index + 1;
-    if (index < 0 || newIndex >= filesInSameDirectory.length) return;
-
-    setFilepath(filesInSameDirectory[newIndex]);
-  }, [filepath, filesInSameDirectory]);
-
-  const openPreviousImage = useCallback(() => {
-    if (!filepath) return;
-
-    const index = filesInSameDirectory.indexOf(filepath);
-    const newIndex = index - 1;
-    if (index < 0 || newIndex < 0) return;
-
-    setFilepath(filesInSameDirectory[newIndex]);
-  }, [filepath, filesInSameDirectory]);
-
-  const closeWindow = useCallback(() => appWindow.close(), [appWindow]);
-
-  const reloadImage = useCallback(() => {
-    setFilepath(filepath);
-  }, [filepath]);
+  const windowTitle = useMemo(
+    () => viewer.image?.path ?? "Image Viewer",
+    [viewer.image?.path],
+  );
 
   const toggleImmersiveMode = useCallback(() => {
     setImmersiveMode((prev) => !prev);
   }, [immersiveMode]);
 
+  const closeWindow = useCallback(() => {
+    appWindow.close();
+  }, [appWindow]);
+
   useEffect(() => {
     appWindow.setTitle(windowTitle);
-  }, [windowTitle]);
-  useKeydown({ key: "ArrowRight" }, openNextImage);
-  useKeydown({ key: "ArrowLeft" }, openPreviousImage);
-  useKeydown({ key: "r", ctrlKey: true }, reloadImage);
-  useKeydown({ key: "o", ctrlKey: true }, openFilePicker);
+  }, [windowTitle, appWindow]);
+
+  useKeydown({ key: "ArrowRight" }, viewer.nextImage);
+  useKeydown({ key: "ArrowLeft" }, viewer.previousImage);
+  useKeydown({ key: "r", ctrlKey: true }, viewer.refreshUrl);
+  useKeydown({ key: "o", ctrlKey: true }, filePicker.open);
   useKeydown({ key: "w", ctrlKey: true }, closeWindow);
   useKeydown({ key: "F11" }, toggleImmersiveMode);
 
   useEffect(() => {
     (async () => {
       const filepath = await getCliArgumentFilepath();
-      if (!filepath) return;
-      console.log(filepath);
-      setFilepath(filepath);
+      viewer.setPath(filepath ?? null);
     })();
   }, []);
 
@@ -72,12 +50,12 @@ export function App() {
     <>
       <Titlebar title={windowTitle} hidden={immersiveMode} />
       <main class="size-full bg-background text-foreground">
-        {fileUrl ? (
-          <ImageView url={fileUrl} />
+        {viewer.image ? (
+          <ImageView url={viewer.image.url} />
         ) : (
           <EmptyView
             message="No file selected"
-            openFilePicker={openFilePicker}
+            openFilePicker={filePicker.open}
           />
         )}
       </main>

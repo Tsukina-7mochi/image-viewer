@@ -9,14 +9,11 @@
 :root {
   /* macOS */
   font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Hiragino Kaku Gothic ProN",
+    -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
     "Hiragino Sans",
     /* Windows */
     "Yu Gothic UI",
-    "Yu Gothic",
-    "Meiryo",
+    "Yu Gothic", "Meiryo",
     /* Linux (GNOME/KDE) */
     "Noto Sans CJK JP",
     "Noto Sans JP",
