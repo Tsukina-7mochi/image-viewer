@@ -44,6 +44,11 @@ body {
   overflow: hidden;
 }
 
+image {
+  max-width: unset;
+  max-height: unset;
+}
+
 *[data-tauri-drag-region] {
   app-region: drag;
 }
