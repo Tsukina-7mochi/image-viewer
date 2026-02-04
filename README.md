@@ -1,7 +1,7 @@
-# Tauri + Vanilla TS
+# Image Viewer
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Typescript.
+An minimap image viewer built with [Tauri](https://v2.tauri.app/).
 
-## Recommended IDE Setup
+![screenshot](./image/image1.png)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+![screenshot](./image/image2.png)
