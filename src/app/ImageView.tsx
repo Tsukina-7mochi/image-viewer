@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from "preact/hooks";
 import { useBoundingClientRect } from "./hooks/useBoundingClientRect";
-import { useImageSize } from "./hooks/useImageSize";
 import { useKeydown } from "./hooks/useKeydown";
 import { useMouseDrag } from "./hooks/useMouseDrag";
 import { useWheel } from "./hooks/useWheel";
 
 type Position = { x: number; y: number };
+type Size = { width: number; height: number };
 
 const WHEEL_MULTIPLIER = 0.01;
 const MIN_SIZE_PX = 10;
@@ -26,16 +26,14 @@ export function ImageView(props: { url: string }) {
   const position = useRef({ x: 0, y: 0 });
   const scale = useRef(1);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
   const [placementStyles, setPlacementStyles] = useState({
     left: "",
     top: "",
     width: "",
     height: "",
   });
-
+  const [imageSize, setImageSize] = useState<Size | null>(null);
   const wrapperRect = useBoundingClientRect(wrapperRef);
-  const imageSize = useImageSize(imageRef);
 
   const setPosition = useCallback(
     (newPosition: Position) => {
@@ -55,22 +53,21 @@ export function ImageView(props: { url: string }) {
           wrapperRect.height - EDGE_PX,
         ),
       };
-      console.log(position.current);
       updatePlacementStyles();
     },
     [wrapperRect, imageSize],
   );
-  const setScale = useCallback(
-    (newScale: number) => {
-      let minScale = 0;
-      if (imageSize !== null) {
-        minScale = MIN_SIZE_PX / Math.min(imageSize.width, imageSize.height);
-      }
-      scale.current = Math.max(minScale, newScale);
-      updatePlacementStyles();
-    },
-    [imageSize],
-  );
+
+  const setScale = useCallback((newScale_: number) => {
+    let minScale = 0;
+    if (imageSize !== null) {
+      minScale = MIN_SIZE_PX / Math.min(imageSize.width, imageSize.height);
+    }
+    const newScale = Math.max(minScale, newScale_);
+    scale.current = newScale;
+
+    updatePlacementStyles();
+  }, []);
 
   const updatePlacementStyles = useCallback(() => {
     if (wrapperRect === null || imageSize === null) {
@@ -83,7 +80,6 @@ export function ImageView(props: { url: string }) {
       return;
     }
 
-    console.log(imageSize);
     const width = imageSize.width * scale.current;
     const height = imageSize.height * scale.current;
     const left = position.current.x;
@@ -97,17 +93,23 @@ export function ImageView(props: { url: string }) {
     });
   }, [wrapperRect, imageSize]);
 
-  const handleWheel = useCallback((e: WheelEvent) => {
-    setScale(scale.current + e.deltaY * WHEEL_MULTIPLIER);
-  }, []);
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      setScale(scale.current + e.deltaY * WHEEL_MULTIPLIER);
+    },
+    [setScale],
+  );
   useWheel(handleWheel);
 
-  const handleDrag = useCallback(({ x, y }: { x: number; y: number }) => {
-    setPosition({
-      x: position.current.x + x,
-      y: position.current.y + y,
-    });
-  }, []);
+  const handleDrag = useCallback(
+    ({ x, y }: { x: number; y: number }) => {
+      setPosition({
+        x: position.current.x + x,
+        y: position.current.y + y,
+      });
+    },
+    [setPosition],
+  );
   useMouseDrag(wrapperRef, handleDrag);
 
   useKeydown({ key: "+", ctrlKey: true }, () => {
@@ -123,14 +125,22 @@ export function ImageView(props: { url: string }) {
     setScale(scale.current - 0.1);
   });
 
+  const handleImageLoad = useCallback((event: Event) => {
+    const target = event.target as HTMLImageElement;
+    setImageSize({
+      width: target.naturalWidth,
+      height: target.naturalHeight,
+    });
+  }, []);
+
   return (
     <div class="size-full" ref={wrapperRef}>
       <img
         src={props.url}
         alt=""
-        class="absolute"
+        class="absolute pointer-events-none max-w-none max-h-none max-h-none"
         style={placementStyles}
-        ref={imageRef}
+        onLoad={handleImageLoad}
       />
     </div>
   );
