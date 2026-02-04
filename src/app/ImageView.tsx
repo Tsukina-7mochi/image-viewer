@@ -138,13 +138,39 @@ export function ImageView(props: { url: string }) {
     setScale(scale.current - 0.1);
   });
 
-  const handleImageLoad = useCallback((event: Event) => {
-    const target = event.target as HTMLImageElement;
-    setImageSize({
-      width: target.naturalWidth,
-      height: target.naturalHeight,
-    });
-  }, []);
+  const handleImageLoad = useCallback(
+    (event: Event) => {
+      const target = event.target as HTMLImageElement;
+      setImageSize({
+        width: target.naturalWidth,
+        height: target.naturalHeight,
+      });
+
+      if (wrapperRect) {
+        const imageAspectRatio = target.naturalWidth / target.naturalHeight;
+        const wrapperAspectRatio = wrapperRect.width / wrapperRect.height;
+
+        if (imageAspectRatio > wrapperAspectRatio) {
+          const scale_ = wrapperRect.width / target.naturalWidth;
+          scale.current = scale_;
+          position.current = {
+            x: 0,
+            y: (wrapperRect.height - target.naturalHeight * scale_) / 2,
+          };
+        } else {
+          const scale_ = wrapperRect.height / target.naturalHeight;
+          scale.current = scale_;
+          position.current = {
+            x: (wrapperRect.width - target.naturalWidth * scale_) / 2,
+            y: 0,
+          };
+        }
+
+        updatePlacementStyles();
+      }
+    },
+    [wrapperRect],
+  );
 
   return (
     <div class="size-full" ref={wrapperRef}>
