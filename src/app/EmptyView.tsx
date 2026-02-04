@@ -1,4 +1,4 @@
-import fileIcon from "../assets/icons/file.svg";
+import fileIcon from "../assets/icons/file.svg?inline";
 export function EmptyView(props: {
   message: string;
   openFilePicker: () => void;

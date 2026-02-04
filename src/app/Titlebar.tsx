@@ -1,6 +1,6 @@
-import closeIcon from "../assets/icons/close.svg";
-import maximizeIcon from "../assets/icons/window-maximize.svg";
-import minimizeIcon from "../assets/icons/window-minimize.svg";
+import closeIcon from "../assets/icons/close.svg?inline";
+import maximizeIcon from "../assets/icons/window-maximize.svg?inline";
+import minimizeIcon from "../assets/icons/window-minimize.svg?inline";
 import { useCurrentWindow } from "./hooks/useCurrentWindow";
 
 function Title(props: { text: string }) {
