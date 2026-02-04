@@ -63,6 +63,7 @@ fn get_cli_argument_filename(state: State<'_, AppData>) -> Option<String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .setup(|app| {
             let file = match app.cli().matches() {
                 Ok(matches) => matches.args.get("file").cloned(),
