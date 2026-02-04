@@ -1,6 +1,6 @@
 # Image Viewer
 
-An minimap image viewer built with [Tauri](https://v2.tauri.app/).
+An minimal image viewer built with [Tauri](https://v2.tauri.app/).
 
 ![screenshot](./image/image1.png)
 
