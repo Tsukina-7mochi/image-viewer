@@ -82,8 +82,10 @@ export function ImageView(props: { url: string }) {
     [imageSize],
   );
 
-  const updatePlacementStyles = useCallback(() => {
-    if (wrapperRect === null || imageSize === null) {
+  const updatePlacementStyles = useCallback((imageSizeOverride?: Size) => {
+    const imageSize_ = imageSizeOverride ?? imageSize;
+
+    if (wrapperRect === null || imageSize_ === null) {
       setPlacementStyles({
         left: "0",
         top: "0",
@@ -93,8 +95,8 @@ export function ImageView(props: { url: string }) {
       return;
     }
 
-    const width = imageSize.width * scale.current;
-    const height = imageSize.height * scale.current;
+    const width = imageSize_.width * scale.current;
+    const height = imageSize_.height * scale.current;
     const left = position.current.x;
     const top = position.current.y;
 
@@ -141,10 +143,11 @@ export function ImageView(props: { url: string }) {
   const handleImageLoad = useCallback(
     (event: Event) => {
       const target = event.target as HTMLImageElement;
-      setImageSize({
+      const imageSize = {
         width: target.naturalWidth,
         height: target.naturalHeight,
-      });
+      }
+      setImageSize(imageSize);
 
       if (wrapperRect) {
         const imageAspectRatio = target.naturalWidth / target.naturalHeight;
@@ -166,7 +169,7 @@ export function ImageView(props: { url: string }) {
           };
         }
 
-        updatePlacementStyles();
+        updatePlacementStyles(imageSize);
       }
     },
     [wrapperRect],
