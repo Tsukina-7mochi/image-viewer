@@ -11,5 +11,5 @@ export function useWheel(callback: (e: WheelEvent) => void) {
     return () => {
       document.removeEventListener("wheel", handler);
     };
-  }, [document, callback]);
+  }, [callback]);
 }

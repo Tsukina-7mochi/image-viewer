@@ -29,5 +29,5 @@ export function useKeydown(
     return () => {
       document.removeEventListener("keydown", handler);
     };
-  }, [document, callback]);
+  }, [callback, filter]);
 }

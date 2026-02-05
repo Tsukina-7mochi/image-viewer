@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "preact/hooks";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import { useBoundingClientRect } from "./hooks/useBoundingClientRect";
 import { useKeydown } from "./hooks/useKeydown";
 import { useMouseDrag } from "./hooks/useMouseDrag";
@@ -20,127 +20,115 @@ function saturate(value: number, min: number, max: number): number {
 }
 
 export function ImageView(props: { url: string }) {
-  // Changes in position depend on scale, but if callbacks depend on scale,
-  // it leads to frequent re-registration of event listeners, so we use
-  // internal mutability with `useRef`.
-  const position = useRef({ x: 0, y: 0 });
-  const scale = useRef(1);
-  const [placementStyles, setPlacementStyles] = useState({
-    left: "",
-    top: "",
-    width: "",
-    height: "",
-  });
+  const [position, setPositionRaw] = useState<Position>({ x: 0, y: 0 });
+  const [scale, setScaleRaw] = useState(1);
   const [imageSize, setImageSize] = useState<Size | null>(null);
   const [wrapperRectRef, wrapperRect] = useBoundingClientRect();
 
-  const setPosition = useCallback(
+  const clampAndSetPosition = useCallback(
     (newPosition: Position) => {
       if (!wrapperRect || !imageSize) return;
-
-      const width = imageSize.width * scale.current;
-      const height = imageSize.height * scale.current;
-      position.current = {
+      setPositionRaw({
         x: saturate(
           newPosition.x,
-          -width + EDGE_PX,
+          -imageSize.width * scale + EDGE_PX,
           wrapperRect.width - EDGE_PX,
         ),
         y: saturate(
           newPosition.y,
-          -height + EDGE_PX,
+          -imageSize.height * scale + EDGE_PX,
           wrapperRect.height - EDGE_PX,
         ),
-      };
-      updatePlacementStyles();
+      });
     },
-    [wrapperRect, imageSize],
+    [wrapperRect, imageSize, scale],
   );
 
-  const setScale = useCallback(
+  const clampAndSetScale = useCallback(
     (newScale_: number) => {
       let minScale = 0;
       if (imageSize !== null) {
         minScale = MIN_SIZE_PX / Math.min(imageSize.width, imageSize.height);
       }
-      const newScale = Math.max(minScale, newScale_);
 
+      const newScale = Math.max(minScale, newScale_);
       if (imageSize) {
-        const pos = position.current;
-        const centerX = pos.x + (imageSize.width * scale.current) / 2;
-        const centerY = pos.y + (imageSize.height * scale.current) / 2;
-        position.current = {
+        const centerX = position.x + (imageSize.width * scale) / 2;
+        const centerY = position.y + (imageSize.height * scale) / 2;
+        setPositionRaw({
           x: centerX - (imageSize.width * newScale) / 2,
           y: centerY - (imageSize.height * newScale) / 2,
-        };
-      }
-
-      scale.current = newScale;
-      updatePlacementStyles();
-    },
-    [imageSize],
-  );
-
-  const updatePlacementStyles = useCallback(
-    (imageSizeOverride?: Size) => {
-      const imageSize_ = imageSizeOverride ?? imageSize;
-
-      if (wrapperRect === null || imageSize_ === null) {
-        setPlacementStyles({
-          left: "0",
-          top: "0",
-          width: "auto",
-          height: "auto",
         });
-        return;
       }
-
-      const width = imageSize_.width * scale.current;
-      const height = imageSize_.height * scale.current;
-      const left = position.current.x;
-      const top = position.current.y;
-
-      setPlacementStyles({
-        left: px(left),
-        top: px(top),
-        width: px(width),
-        height: px(height),
-      });
+      setScaleRaw(newScale);
     },
-    [wrapperRect, imageSize],
+    [imageSize, scale, position],
   );
+
+  const placementStyles = useMemo(() => {
+    if (imageSize === null) {
+      return { left: "0", top: "0", width: "auto", height: "auto" };
+    }
+
+    return {
+      left: px(position.x),
+      top: px(position.y),
+      width: px(imageSize.width * scale),
+      height: px(imageSize.height * scale),
+    };
+  }, [imageSize, position, scale]);
 
   const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      setScale(scale.current + e.deltaY * WHEEL_MULTIPLIER);
-    },
-    [setScale],
+    (e: WheelEvent) => clampAndSetScale(scale + e.deltaY * WHEEL_MULTIPLIER),
+    [scale, clampAndSetScale],
   );
   useWheel(handleWheel);
 
   const handleDrag = useCallback(
     ({ x, y }: { x: number; y: number }) => {
-      setPosition({
-        x: position.current.x + x,
-        y: position.current.y + y,
-      });
+      console.log("drag", x, y);
+      clampAndSetPosition({ x: position.x + x, y: position.y + y });
     },
-    [setPosition],
+    [position, clampAndSetPosition],
   );
   const mouseDragRef = useMouseDrag(handleDrag);
 
+  const fitImageToWindow = useCallback(() => {
+    if (!wrapperRect || !imageSize) return;
+
+    const imageAspectRatio = imageSize.width / imageSize.height;
+    const wrapperAspectRatio = wrapperRect.width / wrapperRect.height;
+
+    if (imageAspectRatio > wrapperAspectRatio) {
+      const scale = wrapperRect.width / imageSize.width;
+      setScaleRaw(scale);
+      setPositionRaw({
+        x: 0,
+        y: (wrapperRect.height - imageSize.height * scale) / 2,
+      });
+    } else {
+      const scale = wrapperRect.height / imageSize.height;
+      setScaleRaw(scale);
+      setPositionRaw({
+        x: (wrapperRect.width - imageSize.width * scale) / 2,
+        y: 0,
+      });
+    }
+  }, [wrapperRect, imageSize]);
+
   useKeydown({ key: "+", ctrlKey: true }, () => {
-    setScale(scale.current + 0.1);
+    clampAndSetScale(scale + 0.1);
   });
   useKeydown({ key: "=", ctrlKey: true }, () => {
-    setScale(scale.current + 0.1);
+    clampAndSetScale(scale + 0.1);
   });
   useKeydown({ key: "-", ctrlKey: true }, () => {
-    setScale(scale.current - 0.1);
+    clampAndSetScale(scale - 0.1);
   });
   useKeydown({ key: "_", ctrlKey: true }, () => {
-    setScale(scale.current - 0.1);
+    clampAndSetScale(scale - 0.1);
   });
+  useKeydown({ key: "0", ctrlKey: true }, fitImageToWindow);
 
   const handleImageLoad = useCallback(
     (event: Event) => {
@@ -156,31 +144,32 @@ export function ImageView(props: { url: string }) {
         const wrapperAspectRatio = wrapperRect.width / wrapperRect.height;
 
         if (imageAspectRatio > wrapperAspectRatio) {
-          const scale_ = wrapperRect.width / target.naturalWidth;
-          scale.current = scale_;
-          position.current = {
+          const scale = wrapperRect.width / target.naturalWidth;
+          setScaleRaw(scale);
+          setPositionRaw({
             x: 0,
-            y: (wrapperRect.height - target.naturalHeight * scale_) / 2,
-          };
+            y: (wrapperRect.height - target.naturalHeight * scale) / 2,
+          });
         } else {
-          const scale_ = wrapperRect.height / target.naturalHeight;
-          scale.current = scale_;
-          position.current = {
-            x: (wrapperRect.width - target.naturalWidth * scale_) / 2,
+          const scale = wrapperRect.height / target.naturalHeight;
+          setScaleRaw(scale);
+          setPositionRaw({
+            x: (wrapperRect.width - target.naturalWidth * scale) / 2,
             y: 0,
-          };
+          });
         }
-
-        updatePlacementStyles(imageSize);
       }
     },
     [wrapperRect],
   );
 
-  const wrapperRef = useCallback((node: HTMLElement | null) => {
-    wrapperRectRef(node);
-    mouseDragRef(node);
-  }, []);
+  const wrapperRef = useCallback(
+    (node: HTMLElement | null) => {
+      wrapperRectRef(node);
+      mouseDragRef(node);
+    },
+    [wrapperRectRef, mouseDragRef],
+  );
 
   return (
     <div class="size-full" ref={wrapperRef}>

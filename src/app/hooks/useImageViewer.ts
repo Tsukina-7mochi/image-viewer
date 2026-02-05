@@ -16,19 +16,16 @@ export function useImageViewer(): ImageViewer {
   const [currentPath, setCurrentPathRaw] = useState<string | null>(null);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
 
-  const setCurrentPath = useCallback(
-    (path: string | null) => {
-      setCurrentPathRaw(path);
-      setCurrentUrl(path ? `${convertFileSrc(path)}?${Date.now()}` : null);
+  const setCurrentPath = useCallback((path: string | null) => {
+    setCurrentPathRaw(path);
+    setCurrentUrl(path ? `${convertFileSrc(path)}?${Date.now()}` : null);
 
-      (async () => {
-        if (!path) return;
-        const paths = await api.listFilesInSameDirectory(path);
-        setImagePaths(paths);
-      })();
-    },
-    [currentPath, currentUrl],
-  );
+    (async () => {
+      if (!path) return;
+      const paths = await api.listFilesInSameDirectory(path);
+      setImagePaths(paths);
+    })();
+  }, []);
 
   const refreshUrl = useCallback(() => {
     setCurrentPath(currentPath);

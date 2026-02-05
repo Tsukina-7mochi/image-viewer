@@ -22,7 +22,7 @@ export function App() {
 
   const toggleImmersiveMode = useCallback(() => {
     setImmersiveMode((prev) => !prev);
-  }, [immersiveMode]);
+  }, []);
 
   const closeWindow = useCallback(() => {
     appWindow.close();
@@ -39,6 +39,7 @@ export function App() {
   useKeydown({ key: "w", ctrlKey: true }, closeWindow);
   useKeydown({ key: "F11" }, toggleImmersiveMode);
 
+  // biome-ignore lint:correctness/useExhaustiveDependencies
   useEffect(() => {
     (async () => {
       const filepath = await getCliArgumentFilepath();
