@@ -25,7 +25,6 @@ export function ImageView(props: { url: string }) {
   // internal mutability with `useRef`.
   const position = useRef({ x: 0, y: 0 });
   const scale = useRef(1);
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const [placementStyles, setPlacementStyles] = useState({
     left: "",
     top: "",
@@ -33,7 +32,7 @@ export function ImageView(props: { url: string }) {
     height: "",
   });
   const [imageSize, setImageSize] = useState<Size | null>(null);
-  const wrapperRect = useBoundingClientRect(wrapperRef);
+  const [wrapperRectRef, wrapperRect] = useBoundingClientRect();
 
   const setPosition = useCallback(
     (newPosition: Position) => {
@@ -82,31 +81,34 @@ export function ImageView(props: { url: string }) {
     [imageSize],
   );
 
-  const updatePlacementStyles = useCallback((imageSizeOverride?: Size) => {
-    const imageSize_ = imageSizeOverride ?? imageSize;
+  const updatePlacementStyles = useCallback(
+    (imageSizeOverride?: Size) => {
+      const imageSize_ = imageSizeOverride ?? imageSize;
 
-    if (wrapperRect === null || imageSize_ === null) {
+      if (wrapperRect === null || imageSize_ === null) {
+        setPlacementStyles({
+          left: "0",
+          top: "0",
+          width: "auto",
+          height: "auto",
+        });
+        return;
+      }
+
+      const width = imageSize_.width * scale.current;
+      const height = imageSize_.height * scale.current;
+      const left = position.current.x;
+      const top = position.current.y;
+
       setPlacementStyles({
-        left: "0",
-        top: "0",
-        width: "auto",
-        height: "auto",
+        left: px(left),
+        top: px(top),
+        width: px(width),
+        height: px(height),
       });
-      return;
-    }
-
-    const width = imageSize_.width * scale.current;
-    const height = imageSize_.height * scale.current;
-    const left = position.current.x;
-    const top = position.current.y;
-
-    setPlacementStyles({
-      left: px(left),
-      top: px(top),
-      width: px(width),
-      height: px(height),
-    });
-  }, [wrapperRect, imageSize]);
+    },
+    [wrapperRect, imageSize],
+  );
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -125,7 +127,7 @@ export function ImageView(props: { url: string }) {
     },
     [setPosition],
   );
-  useMouseDrag(wrapperRef, handleDrag);
+  const mouseDragRef = useMouseDrag(handleDrag);
 
   useKeydown({ key: "+", ctrlKey: true }, () => {
     setScale(scale.current + 0.1);
@@ -146,7 +148,7 @@ export function ImageView(props: { url: string }) {
       const imageSize = {
         width: target.naturalWidth,
         height: target.naturalHeight,
-      }
+      };
       setImageSize(imageSize);
 
       if (wrapperRect) {
@@ -174,6 +176,11 @@ export function ImageView(props: { url: string }) {
     },
     [wrapperRect],
   );
+
+  const wrapperRef = useCallback((node: HTMLElement | null) => {
+    wrapperRectRef(node);
+    mouseDragRef(node);
+  }, []);
 
   return (
     <div class="size-full" ref={wrapperRef}>

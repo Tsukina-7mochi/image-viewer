@@ -1,25 +1,28 @@
-import type { RefObject } from "preact";
-import { useEffect } from "preact/hooks";
+import type { RefCallback } from "preact";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
 type Vec2 = { x: number; y: number };
 
 export function useMouseDrag(
-  ref: RefObject<HTMLElement>,
   callback: (pos: Vec2) => void,
-): void {
+): RefCallback<HTMLElement> {
+  const callback_ = useRef(callback);
   useEffect(() => {
-    if (!ref.current) return;
+    callback_.current = callback;
+  }, [callback]);
+
+  const ref: RefCallback<HTMLElement> = useCallback((node) => {
+    console.log("useMouseDrag", node);
+    if (!node) return;
 
     let pressing = false;
-
     const downHandler = (e: MouseEvent) => {
       pressing = true;
       e.preventDefault();
     };
     const moveHandler = (e: MouseEvent) => {
       if (!pressing) return;
-
-      callback({
+      callback_.current({
         x: e.movementX,
         y: e.movementY,
       });
@@ -30,15 +33,17 @@ export function useMouseDrag(
       e.preventDefault();
     };
 
-    addEventListener("mousedown", downHandler);
-    addEventListener("mousemove", moveHandler);
-    addEventListener("mouseup", upHandler);
-    addEventListener("mouseleave", upHandler);
+    node.addEventListener("mousedown", downHandler);
+    node.addEventListener("mousemove", moveHandler);
+    node.addEventListener("mouseup", upHandler);
+    node.addEventListener("mouseleave", upHandler);
     return () => {
-      removeEventListener("mousedown", downHandler);
-      removeEventListener("mousemove", moveHandler);
-      removeEventListener("mouseup", upHandler);
-      removeEventListener("mouseleave", upHandler);
+      node.removeEventListener("mousedown", downHandler);
+      node.removeEventListener("mousemove", moveHandler);
+      node.removeEventListener("mouseup", upHandler);
+      node.removeEventListener("mouseleave", upHandler);
     };
-  }, [ref.current, callback]);
+  }, []);
+
+  return ref;
 }

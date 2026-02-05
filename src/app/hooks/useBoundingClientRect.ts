@@ -1,22 +1,29 @@
-import type { RefObject } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import type { RefCallback } from "preact";
+import { useCallback, useState } from "preact/hooks";
 
-export function useBoundingClientRect(
-  ref: RefObject<HTMLElement>,
-): DOMRect | null {
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  useEffect(() => {
-    const handleResize = () => {
-      setRect(ref.current?.getBoundingClientRect() ?? null);
-    };
+export function useBoundingClientRect(): [
+  RefCallback<HTMLElement>,
+  DOMRectReadOnly | null,
+] {
+  const [rect, setRect] = useState<DOMRectReadOnly | null>(null);
 
-    setRect(ref.current?.getBoundingClientRect() ?? null);
-    window.addEventListener("resize", handleResize);
+  const ref: RefCallback<HTMLElement> = useCallback((node) => {
+    console.log("useBoundingClientRect", node);
+    if (node === null) {
+      setRect(null);
+      return;
+    }
+    setRect(node.getBoundingClientRect());
+
+    const observer = new ResizeObserver((resize) => {
+      setRect(resize[0].contentRect);
+    });
+    observer.observe(node);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      observer.disconnect();
     };
-  }, [ref.current]);
+  }, []);
 
-  return rect;
+  return [ref, rect];
 }
